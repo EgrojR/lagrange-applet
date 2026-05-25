@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0F4E4D">
+<title>Triángulos con perímetro 4</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --uis-teal:        #0F4E4D;
+    --uis-teal-soft:   #2A7D7B;
+    --uis-teal-bg:     #E8F0EF;
+    --uis-lime:        #8DC63F;
+    --uis-lime-soft:   #B5DC6F;
+    --uis-lime-bg:     #F2F8E6;
+    --bg:              #FAF8F4;
+    --panel:           #FFFFFF;
+    --ink:             #1A1A1A;
+    --ink-soft:        #4A4A4A;
+    --ink-faint:       #8A8A8A;
+    --line:            #E0DCD2;
+    --line-strong:     #C8C2B4;
+    --gold:            #B8860B;
+    --accent:          #B8332B;
+    --shadow-sm:       0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md:       0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-lg:       0 12px 32px -8px rgba(15,78,77,0.18), 0 4px 12px rgba(0,0,0,0.04);
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{
+    margin:0; padding:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter Tight', sans-serif;
+    line-height:1.4;
+    overscroll-behavior:none;
+    -webkit-font-smoothing:antialiased;
+  }
+  html,body{height:100%}
+  body{
+    display:flex; flex-direction:column;
+    min-height:100dvh;
+  }
+
+  /* Cabecera */
+  header{
+    padding:14px 18px 12px;
+    background:linear-gradient(180deg, #FFFFFF 0%, var(--bg) 100%);
+    border-bottom:1px solid var(--line);
+    position:relative;
+    flex-shrink:0;
+  }
+  header::after{
+    content:""; position:absolute; left:18px; right:18px; bottom:-1px;
+    height:2px; background:linear-gradient(90deg, var(--uis-teal) 0%, var(--uis-lime) 100%);
+    border-radius:2px;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px; letter-spacing:1.2px;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:4px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:21px;
+    line-height:1.15;
+    margin:0;
+    color:var(--uis-teal);
+    letter-spacing:-0.3px;
+  }
+  h1 em{
+    font-style:italic;
+    color:var(--ink);
+    font-weight:500;
+  }
+  .subtitle{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-top:4px;
+  }
+
+  /* Área principal scrollable */
+  main{
+    flex:1;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding:14px 16px 90px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .panel{
+    display:none;
+  }
+  .panel.active{
+    display:block;
+    animation:fadeIn 240ms ease-out;
+  }
+  @keyframes fadeIn{
+    from{opacity:0; transform:translateY(6px)}
+    to{opacity:1; transform:translateY(0)}
+  }
+
+  /* ===== Componentes compartidos ===== */
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    box-shadow:var(--shadow-sm);
+    margin-bottom:12px;
+  }
+  .card-title{
+    font-family:'Fraunces', serif;
+    font-size:15px;
+    font-weight:600;
+    color:var(--uis-teal);
+    margin:0 0 8px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .card-title .num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    background:var(--uis-teal);
+    color:white;
+    padding:2px 6px;
+    border-radius:4px;
+    font-weight:500;
+  }
+
+  .area-display{
+    text-align:center;
+    padding:14px 0 8px;
+  }
+  .area-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:4px;
+  }
+  .area-value{
+    font-family:'Fraunces', serif;
+    font-size:38px;
+    font-weight:600;
+    line-height:1;
+    color:var(--uis-teal);
+    font-variant-numeric:tabular-nums;
+    font-feature-settings:"tnum";
+  }
+  .area-sub{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--ink-faint);
+    margin-top:6px;
+  }
+
+  /* Barra/termómetro de área */
+  .thermo{
+    height:8px;
+    background:var(--line);
+    border-radius:99px;
+    overflow:hidden;
+    position:relative;
+    margin:12px 0 4px;
+  }
+  .thermo-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--uis-teal-soft) 0%, var(--uis-lime) 100%);
+    border-radius:99px;
+    transition:width 90ms linear;
+  }
+  .thermo-marker{
+    position:absolute;
+    top:-3px; bottom:-3px;
+    width:2px;
+    background:var(--accent);
+    border-radius:99px;
+  }
+  .thermo-labels{
+    display:flex; justify-content:space-between;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    color:var(--ink-faint);
+    margin-top:4px;
+  }
+
+  /* Slider */
+  .slider-row{
+    margin:10px 0 4px;
+  }
+  .slider-label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:13px; color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .slider-label .val{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:500;
+    color:var(--ink);
+    font-size:14px;
+  }
+  input[type="range"]{
+    width:100%;
+    height:32px;
+    -webkit-appearance:none;
+    background:transparent;
+    margin:0;
+  }
+  input[type="range"]::-webkit-slider-runnable-track{
+    height:6px;
+    background:linear-gradient(90deg, var(--uis-teal) 0%, var(--uis-lime) 100%);
+    border-radius:99px;
+  }
+  input[type="range"]::-moz-range-track{
+    height:6px;
+    background:linear-gradient(90deg, var(--uis-teal) 0%, var(--uis-lime) 100%);
+    border-radius:99px;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:26px; height:26px;
+    background:white;
+    border:2.5px solid var(--uis-teal);
+    border-radius:50%;
+    margin-top:-10px;
+    box-shadow:var(--shadow-md);
+    cursor:pointer;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:26px; height:26px;
+    background:white;
+    border:2.5px solid var(--uis-teal);
+    border-radius:50%;
+    box-shadow:var(--shadow-md);
+    cursor:pointer;
+  }
+
+  /* Canvas */
+  .canvas-wrap{
+    position:relative;
+    width:100%;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:10px;
+  }
+  canvas{display:block; width:100%; height:auto}
+  /* touch-action:none SOLO en el canvas arrastrable, para no bloquear el scroll de la página */
+  #canvas-drag{touch-action:none}
+
+  /* Input numérico */
+  .num-input-row{
+    display:flex; gap:8px;
+    margin:10px 0;
+  }
+  .num-input-row label{
+    flex:1;
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .num-input-row label span{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .num-input-row input[type="number"]{
+    width:100%;
+    padding:10px 12px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:16px;
+    border:1.5px solid var(--line-strong);
+    border-radius:10px;
+    background:var(--panel);
+    color:var(--ink);
+    appearance:textfield;
+    -moz-appearance:textfield;
+  }
+  .num-input-row input[type="number"]:focus{
+    outline:none;
+    border-color:var(--uis-teal);
+    box-shadow:0 0 0 3px var(--uis-teal-bg);
+  }
+  .num-input-row input[type="number"]::-webkit-outer-spin-button,
+  .num-input-row input[type="number"]::-webkit-inner-spin-button{
+    -webkit-appearance:none; margin:0;
+  }
+
+  /* Botones */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    gap:6px;
+    padding:11px 18px;
+    font-family:'Inter Tight', sans-serif;
+    font-size:14px;
+    font-weight:500;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    transition:all 140ms ease;
+    min-height:44px;
+    width:100%;
+  }
+  .btn-primary{
+    background:var(--uis-teal);
+    color:white;
+    box-shadow:var(--shadow-md);
+  }
+  .btn-primary:active{
+    background:#0A3837;
+    transform:scale(0.98);
+  }
+  .btn-secondary{
+    background:var(--panel);
+    color:var(--ink-soft);
+    border:1.5px solid var(--line-strong);
+  }
+  .btn-secondary:active{
+    background:var(--bg);
+    transform:scale(0.98);
+  }
+  .btn-row{display:flex; gap:8px}
+  .btn-row .btn{flex:1}
+
+  /* Lista de intentos / ranking */
+  .attempts{
+    margin-top:10px;
+    border-top:1px solid var(--line);
+    padding-top:10px;
+  }
+  .attempts-empty{
+    text-align:center;
+    color:var(--ink-faint);
+    font-style:italic;
+    font-size:12.5px;
+    padding:18px 0;
+  }
+  .attempt-row{
+    display:grid;
+    grid-template-columns:28px 1fr auto;
+    gap:10px;
+    align-items:center;
+    padding:8px 6px;
+    border-radius:8px;
+    font-size:13px;
+  }
+  .attempt-row:not(:last-child){border-bottom:1px dashed var(--line)}
+  .attempt-row.best{
+    background:var(--uis-lime-bg);
+    border-bottom:none;
+    border:1px solid var(--uis-lime);
+    margin:4px 0;
+  }
+  .rank-badge{
+    width:24px; height:24px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    font-weight:600;
+    background:var(--uis-teal);
+    color:white;
+    border-radius:50%;
+  }
+  .rank-badge.gold{background:var(--gold)}
+  .rank-badge.silver{background:#9A9A9A}
+  .rank-badge.bronze{background:#A66828}
+  .attempt-vals{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  .attempt-area{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    font-weight:600;
+    color:var(--uis-teal);
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* Feedback de cercanía al óptimo */
+  .feedback{
+    font-size:12px;
+    text-align:center;
+    padding:6px 8px;
+    border-radius:6px;
+    margin-top:6px;
+    font-style:italic;
+    color:var(--ink-soft);
+    background:var(--bg);
+  }
+  .feedback.warm{background:#FFF4E0; color:#8B6914}
+  .feedback.hot{background:var(--uis-lime-bg); color:#5A7A1F}
+  .feedback.peak{background:var(--uis-teal); color:white; font-style:normal; font-weight:500}
+
+  /* Tabs (navegación inferior) */
+  nav.tabs{
+    position:fixed;
+    bottom:0; left:0; right:0;
+    background:var(--panel);
+    border-top:1px solid var(--line);
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    box-shadow:0 -4px 16px rgba(0,0,0,0.04);
+    padding-bottom:env(safe-area-inset-bottom);
+    z-index:10;
+  }
+  nav.tabs button{
+    background:none;
+    border:none;
+    padding:8px 4px 10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    cursor:pointer;
+    color:var(--ink-faint);
+    font-family:'Inter Tight', sans-serif;
+    font-size:10.5px;
+    font-weight:500;
+    transition:color 140ms ease;
+    position:relative;
+  }
+  nav.tabs button .ic{
+    width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  nav.tabs button.active{color:var(--uis-teal)}
+  nav.tabs button.active::before{
+    content:""; position:absolute;
+    top:0; left:25%; right:25%;
+    height:2.5px;
+    background:var(--uis-lime);
+    border-radius:0 0 3px 3px;
+  }
+  nav.tabs button svg{stroke-width:1.8}
+
+  /* Helper text */
+  .hint{
+    font-size:12px;
+    color:var(--ink-faint);
+    font-style:italic;
+    margin-top:6px;
+    line-height:1.4;
+  }
+
+  /* Pista del óptimo (modo concurso) */
+  .reveal-optimum{
+    margin-top:8px;
+    padding:10px 12px;
+    background:var(--uis-teal-bg);
+    border-left:3px solid var(--uis-teal);
+    border-radius:6px;
+    font-size:12px;
+    color:var(--uis-teal);
+    display:none;
+  }
+  .reveal-optimum.show{display:block}
+  .reveal-optimum strong{font-family:'Fraunces', serif; font-size:14px}
+
+  /* Footer pequeño en panel */
+  .panel-footer{
+    text-align:center;
+    font-size:10.5px;
+    color:var(--ink-faint);
+    margin-top:8px;
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:0.5px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Sesión docente · Multiplicadores de Lagrange</div>
+  <h1>Un triángulo <em>rectángulo</em> con perímetro 4</h1>
+  <div class="subtitle">¿Cuál tiene mayor área? Explore con su celular.</div>
+</header>
+
+<main id="main">
+
+  <!-- ===== PANEL 1: SLIDER ===== -->
+  <section class="panel active" id="panel-slider">
+
+    <div class="card">
+      <h2 class="card-title"><span class="num">1</span> Deslice y observe</h2>
+
+      <div class="canvas-wrap">
+        <canvas id="canvas-slider" width="600" height="380"></canvas>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-label">
+          <span>Cateto base <em>x</em></span>
+          <span class="val" id="slider-x-val">0.800</span>
+        </div>
+        <input type="range" id="slider-x" min="0.05" max="1.95" step="0.005" value="0.8">
+      </div>
+
+      <div class="area-display">
+        <div class="area-label">Área del triángulo</div>
+        <div class="area-value" id="slider-area">0.640</div>
+        <div class="area-sub">cateto <em>y</em> = <span id="slider-y-val">1.600</span></div>
+      </div>
+
+      <div class="thermo" id="slider-thermo">
+        <div class="thermo-fill" id="slider-thermo-fill" style="width:0%"></div>
+        <div class="thermo-marker" id="slider-thermo-marker" style="left:0%"></div>
+      </div>
+      <div class="thermo-labels">
+        <span>0</span>
+        <span>óptimo ≈ 0.686</span>
+      </div>
+
+      <div class="feedback" id="slider-feedback">Mueva el deslizador para explorar.</div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="num">i</span> Cómo leer</h2>
+      <p style="margin:0; font-size:13px; color:var(--ink-soft); line-height:1.55">
+        Se fija el cateto <em>x</em>; el otro cateto <em>y</em> se calcula automáticamente
+        para que el perímetro sea exactamente 4. El área cambia en tiempo real.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== PANEL 2: CONCURSO ===== -->
+  <section class="panel" id="panel-concurso">
+
+    <div class="card">
+      <h2 class="card-title"><span class="num">2</span> Pruebe y compare</h2>
+      <p style="margin:0 0 8px; font-size:13px; color:var(--ink-soft)">
+        Escriba <em>un</em> cateto (entre 0 y 2). El otro se ajusta para que el perímetro sea 4.
+      </p>
+
+      <div class="num-input-row">
+        <label>
+          <span>Cateto x</span>
+          <input type="number" id="concurso-x" min="0.01" max="1.99" step="0.001" placeholder="ej. 1.000">
+        </label>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="concurso-add">Calcular y guardar</button>
+        <button class="btn btn-secondary" id="concurso-clear" style="flex:0 0 auto; padding:11px 14px">Borrar</button>
+      </div>
+
+      <div id="concurso-result" class="reveal-optimum" style="margin-top:10px">
+        <strong id="concurso-result-area">—</strong><br>
+        <span id="concurso-result-detail" style="font-family:'JetBrains Mono', monospace; font-size:11px"></span>
+      </div>
+
+      <div class="attempts" id="concurso-list">
+        <div class="attempts-empty">Aún no hay intentos. Pruebe varios valores y compare.</div>
+      </div>
+
+      <div class="reveal-optimum" id="concurso-reveal">
+        <strong>Pista geométrica:</strong> los intentos con catetos iguales tienden a dar
+        áreas mayores. ¿Coincidencia?
+      </div>
+
+      <p class="hint">Sus intentos se guardan solo en este celular. Al cerrar el navegador, persisten;
+        pulse «Borrar» para reiniciar.</p>
+    </div>
+  </section>
+
+  <!-- ===== PANEL 3: ARRASTRE ===== -->
+  <section class="panel" id="panel-arrastre">
+
+    <div class="card">
+      <h2 class="card-title"><span class="num">3</span> Arrastre el vértice</h2>
+      <p style="margin:0 0 8px; font-size:13px; color:var(--ink-soft)">
+        Toque el punto <strong style="color:var(--accent)">●</strong> y muévalo. El triángulo
+        se reajusta manteniendo el perímetro en 4.
+      </p>
+
+      <div class="canvas-wrap">
+        <canvas id="canvas-drag" width="600" height="500"></canvas>
+      </div>
+
+      <div class="area-display">
+        <div class="area-label">Área actual</div>
+        <div class="area-value" id="drag-area">0.640</div>
+        <div class="area-sub">
+          x = <span id="drag-x-val">0.800</span> &middot;
+          y = <span id="drag-y-val">1.600</span>
+        </div>
+      </div>
+
+      <div class="thermo">
+        <div class="thermo-fill" id="drag-thermo-fill" style="width:0%"></div>
+      </div>
+      <div class="thermo-labels">
+        <span>0</span>
+        <span>óptimo ≈ 0.686</span>
+      </div>
+
+      <div class="feedback" id="drag-feedback">Mantenga pulsado y arrastre el punto.</div>
+
+      <div class="panel-footer">
+        mejor área alcanzada: <span id="drag-best">0.000</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PANEL 4: RANKING ===== -->
+  <section class="panel" id="panel-ranking">
+
+    <div class="card">
+      <h2 class="card-title"><span class="num">4</span> Su ranking personal</h2>
+      <p style="margin:0 0 8px; font-size:13px; color:var(--ink-soft)">
+        Los mejores 10 triángulos que ha encontrado, ordenados por área. Reúne
+        intentos del modo concurso y del modo arrastre.
+      </p>
+
+      <div class="attempts" id="ranking-list">
+        <div class="attempts-empty">Su ranking se llenará a medida que pruebe triángulos.</div>
+      </div>
+
+      <button class="btn btn-secondary" id="ranking-clear" style="margin-top:12px">Reiniciar mi ranking</button>
+
+      <div class="reveal-optimum show" style="margin-top:14px">
+        <strong>Área teórica máxima:</strong> 12 − 8√2 ≈ 0.6863<br>
+        <span style="font-family:'JetBrains Mono', monospace; font-size:11px">
+          alcanzada cuando x = y = 4 − 2√2 ≈ 1.1716
+        </span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<nav class="tabs" id="tabs">
+  <button data-panel="slider" class="active">
+    <span class="ic">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <circle cx="9" cy="12" r="3" fill="currentColor"/>
+      </svg>
+    </span>
+    Slider
+  </button>
+  <button data-panel="concurso">
+    <span class="ic">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <rect x="4" y="5" width="16" height="14" rx="2"/>
+        <line x1="8" y1="9" x2="16" y2="9"/>
+        <line x1="8" y1="13" x2="16" y2="13"/>
+        <line x1="8" y1="17" x2="13" y2="17"/>
+      </svg>
+    </span>
+    Concurso
+  </button>
+  <button data-panel="arrastre">
+    <span class="ic">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <polygon points="4,19 20,19 20,7"/>
+        <circle cx="20" cy="7" r="2.5" fill="currentColor"/>
+      </svg>
+    </span>
+    Arrastre
+  </button>
+  <button data-panel="ranking">
+    <span class="ic">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M6 21V11M12 21V5M18 21V14"/>
+      </svg>
+    </span>
+    Ranking
+  </button>
+</nav>
+
+<script>
+(function(){
+'use strict';
+
+// =================================================================
+// MATEMÁTICA DEL PROBLEMA
+// =================================================================
+// Triángulo rectángulo de catetos x, y > 0 con perímetro x+y+sqrt(x²+y²)=4
+// Dado x, despejamos y: sqrt(x²+y²) = 4 - x - y
+//   Elevando al cuadrado (exige 4-x-y ≥ 0): x² + y² = (4-x-y)²
+//   Desarrollando y simplificando: y = (8 - 4x) / (4 - x), válido en 0 < x < 2
+// Área = xy/2.
+// Óptimo teórico: x = y = 4 - 2√2 ≈ 1.171573, A* = 12 - 8√2 ≈ 0.686292.
+
+const OPT_X = 4 - 2*Math.sqrt(2);          // 1.1715728...
+const OPT_AREA = 12 - 8*Math.sqrt(2);       // 0.6862915...
+
+function yFromX(x){
+  if(x <= 0 || x >= 2) return 0;
+  return (8 - 4*x) / (4 - x);
+}
+function areaFromX(x){
+  const y = yFromX(x);
+  return 0.5 * x * y;
+}
+
+function feedbackFor(area){
+  const r = area / OPT_AREA;       // 0..1
+  if(r < 0.40) return {txt:'Aún hay mucho margen. Pruebe valores más equilibrados.', cls:''};
+  if(r < 0.75) return {txt:'Va por buen camino.', cls:'warm'};
+  if(r < 0.97) return {txt:'¡Muy cerca del óptimo!', cls:'hot'};
+  if(r < 0.999) return {txt:'A un paso del máximo.', cls:'hot'};
+  return {txt:'Óptimo alcanzado (dentro de la precisión).', cls:'peak'};
+}
+
+// =================================================================
+// PERSISTENCIA (localStorage) — tolerante a WebViews sin soporte
+// =================================================================
+const STORE_KEY = 'lagrange_app_v1';
+let store = {
+  attempts: [],      // {x, y, area, ts, source}
+  bestArea: 0,
+};
+let storageAvailable = false;
+try {
+  // Test de escritura/lectura para detectar WebViews con storage deshabilitado
+  localStorage.setItem('__test__', '1');
+  localStorage.removeItem('__test__');
+  storageAvailable = true;
+  const raw = localStorage.getItem(STORE_KEY);
+  if(raw){
+    const parsed = JSON.parse(raw);
+    if(parsed && Array.isArray(parsed.attempts)){
+      store.attempts = parsed.attempts;
+      store.bestArea = parsed.bestArea || 0;
+    }
+  }
+} catch(e){
+  // WebView sin localStorage: seguimos en memoria solamente, sin romper.
+  storageAvailable = false;
+}
+
+function save(){
+  if(!storageAvailable) return;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); }
+  catch(e){ storageAvailable = false; }
+}
+
+function recordAttempt(x, y, area, source){
+  // Evitar duplicados exactos (mismo x con 3 decimales)
+  const xr = Math.round(x*1000)/1000;
+  const exists = store.attempts.some(a => Math.round(a.x*1000)/1000 === xr && a.source === source);
+  if(!exists){
+    store.attempts.push({x, y, area, ts: Date.now(), source});
+    // Mantener solo los 50 más recientes para no inflar
+    if(store.attempts.length > 50){
+      // Ordenar por área desc, conservar top 50
+      store.attempts.sort((a,b)=>b.area-a.area);
+      store.attempts = store.attempts.slice(0, 50);
+    }
+  }
+  if(area > store.bestArea) store.bestArea = area;
+  save();
+  refreshRanking();
+}
+
+// =================================================================
+// TABS
+// =================================================================
+const tabBtns = document.querySelectorAll('#tabs button');
+const panels = {
+  slider: document.getElementById('panel-slider'),
+  concurso: document.getElementById('panel-concurso'),
+  arrastre: document.getElementById('panel-arrastre'),
+  ranking: document.getElementById('panel-ranking'),
+};
+
+tabBtns.forEach(btn => {
+  const activate = (e) => {
+    if(e && e.cancelable && e.type === 'touchend') e.preventDefault();
+    const target = btn.dataset.panel;
+    tabBtns.forEach(b => b.classList.toggle('active', b === btn));
+    Object.entries(panels).forEach(([k, el]) => {
+      el.classList.toggle('active', k === target);
+    });
+    // Re-renderizar canvas al activarse (por si dimensiones cambiaron)
+    if(target === 'slider') drawSliderCanvas();
+    if(target === 'arrastre') drawDragCanvas();
+    if(target === 'ranking') refreshRanking();
+    // Scroll al inicio
+    document.getElementById('main').scrollTop = 0;
+  };
+  btn.addEventListener('click', activate);
+  // Fallback para WebViews que no disparan click correctamente
+  btn.addEventListener('touchend', activate, {passive: false});
+});
+
+// =================================================================
+// PANEL 1: SLIDER
+// =================================================================
+const sliderEl = document.getElementById('slider-x');
+const sliderXVal = document.getElementById('slider-x-val');
+const sliderYVal = document.getElementById('slider-y-val');
+const sliderAreaEl = document.getElementById('slider-area');
+const sliderThermoFill = document.getElementById('slider-thermo-fill');
+const sliderThermoMarker = document.getElementById('slider-thermo-marker');
+const sliderFeedback = document.getElementById('slider-feedback');
+const canvasSlider = document.getElementById('canvas-slider');
+const ctxS = canvasSlider.getContext('2d');
+
+// Posición del marcador del óptimo en el termómetro: óptimo / óptimo = 100%
+// Se mantiene fijo. Mejor: lo dejamos al 100% pero usamos el área actual / óptimo para el fill.
+sliderThermoMarker.style.left = '100%';
+
+let sliderLastRecorded = -1;
+function updateSlider(){
+  const x = parseFloat(sliderEl.value);
+  const y = yFromX(x);
+  const area = areaFromX(x);
+  sliderXVal.textContent = x.toFixed(3);
+  sliderYVal.textContent = y.toFixed(3);
+  sliderAreaEl.textContent = area.toFixed(3);
+
+  const pct = Math.max(0, Math.min(100, (area / OPT_AREA) * 100));
+  sliderThermoFill.style.width = pct + '%';
+
+  const fb = feedbackFor(area);
+  sliderFeedback.textContent = fb.txt;
+  sliderFeedback.className = 'feedback ' + fb.cls;
+
+  drawSliderCanvas(x, y);
+
+  // Registrar como intento si supera un umbral (evita inundar con cada micro-movimiento)
+  // Solo registramos al soltar (ver evento 'change')
+}
+
+sliderEl.addEventListener('input', updateSlider);
+sliderEl.addEventListener('change', () => {
+  const x = parseFloat(sliderEl.value);
+  const y = yFromX(x);
+  const area = areaFromX(x);
+  recordAttempt(x, y, area, 'slider');
+});
+
+function drawSliderCanvas(x, y){
+  if(x === undefined) x = parseFloat(sliderEl.value);
+  if(y === undefined) y = yFromX(x);
+
+  // Dimensiones reales del canvas según devicePixelRatio
+  const cssW = canvasSlider.clientWidth;
+  const cssH = Math.round(cssW * 380/600);  // mantener proporción
+  const dpr = window.devicePixelRatio || 1;
+  if(canvasSlider.width !== cssW * dpr){
+    canvasSlider.width = cssW * dpr;
+    canvasSlider.height = cssH * dpr;
+    canvasSlider.style.height = cssH + 'px';
+  }
+  ctxS.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctxS.clearRect(0, 0, cssW, cssH);
+
+  // Padding
+  const padL = 36, padR = 24, padT = 18, padB = 30;
+  const W = cssW - padL - padR;
+  const H = cssH - padT - padB;
+
+  // Escala: máximo x posible ~ 2, máximo y posible ~ 2
+  // Usaremos los rangos reales del problema (0..2) en ambos ejes
+  const maxX = 2.05, maxY = 2.05;
+  const sx = W / maxX;
+  const sy = H / maxY;
+  const scale = Math.min(sx, sy);
+  // Origen en padL, cssH-padB
+  const ox = padL;
+  const oy = cssH - padB;
+
+  // Ejes
+  ctxS.strokeStyle = '#C8C2B4';
+  ctxS.lineWidth = 1;
+  ctxS.beginPath();
+  ctxS.moveTo(ox, oy);
+  ctxS.lineTo(ox + 2*scale + 6, oy);
+  ctxS.moveTo(ox, oy);
+  ctxS.lineTo(ox, oy - 2*scale - 6);
+  ctxS.stroke();
+
+  // Marcas de los ejes
+  ctxS.fillStyle = '#8A8A8A';
+  ctxS.font = '11px "JetBrains Mono", monospace';
+  for(let t = 0.5; t <= 2; t += 0.5){
+    // x
+    ctxS.beginPath();
+    ctxS.moveTo(ox + t*scale, oy);
+    ctxS.lineTo(ox + t*scale, oy + 4);
+    ctxS.stroke();
+    ctxS.textAlign = 'center';
+    ctxS.fillText(t.toFixed(1), ox + t*scale, oy + 16);
+    // y
+    ctxS.beginPath();
+    ctxS.moveTo(ox, oy - t*scale);
+    ctxS.lineTo(ox - 4, oy - t*scale);
+    ctxS.stroke();
+    ctxS.textAlign = 'right';
+    ctxS.fillText(t.toFixed(1), ox - 6, oy - t*scale + 4);
+  }
+
+  // Triángulo
+  const px = ox + x*scale;
+  const py = oy - y*scale;
+  const pb = ox + x*scale;     // vértice ángulo recto (x, 0)
+  const py0 = oy;
+
+  // Relleno suave
+  ctxS.fillStyle = 'rgba(141, 198, 63, 0.18)';
+  ctxS.beginPath();
+  ctxS.moveTo(ox, oy);
+  ctxS.lineTo(pb, py0);
+  ctxS.lineTo(pb, py);
+  ctxS.closePath();
+  ctxS.fill();
+
+  // Contorno
+  ctxS.strokeStyle = '#0F4E4D';
+  ctxS.lineWidth = 2.2;
+  ctxS.beginPath();
+  ctxS.moveTo(ox, oy);
+  ctxS.lineTo(pb, py0);
+  ctxS.lineTo(pb, py);
+  ctxS.closePath();
+  ctxS.stroke();
+
+  // Marcador de ángulo recto en (x, 0)
+  const sq = 9;
+  ctxS.strokeStyle = '#0F4E4D';
+  ctxS.lineWidth = 1.5;
+  ctxS.beginPath();
+  ctxS.moveTo(pb - sq, py0);
+  ctxS.lineTo(pb - sq, py0 - sq);
+  ctxS.lineTo(pb, py0 - sq);
+  ctxS.stroke();
+
+  // Etiquetas de catetos
+  ctxS.fillStyle = '#1A1A1A';
+  ctxS.font = '12px "Inter Tight", sans-serif';
+  ctxS.textAlign = 'center';
+  ctxS.fillText('x = ' + x.toFixed(3), ox + (x*scale)/2, py0 - 6);
+  ctxS.save();
+  ctxS.translate(pb + 8, py0 - (y*scale)/2);
+  ctxS.textAlign = 'left';
+  ctxS.fillText('y = ' + y.toFixed(3), 0, 4);
+  ctxS.restore();
+
+  // Indicador del óptimo (línea fantasma)
+  ctxS.strokeStyle = 'rgba(184, 134, 11, 0.35)';
+  ctxS.setLineDash([3, 4]);
+  ctxS.lineWidth = 1.2;
+  ctxS.beginPath();
+  ctxS.moveTo(ox + OPT_X*scale, oy);
+  ctxS.lineTo(ox + OPT_X*scale, oy - OPT_X*scale);
+  ctxS.lineTo(ox, oy - OPT_X*scale);
+  ctxS.stroke();
+  ctxS.setLineDash([]);
+}
+
+// =================================================================
+// PANEL 2: CONCURSO
+// =================================================================
+const concursoX = document.getElementById('concurso-x');
+const concursoAdd = document.getElementById('concurso-add');
+const concursoClear = document.getElementById('concurso-clear');
+const concursoList = document.getElementById('concurso-list');
+const concursoResult = document.getElementById('concurso-result');
+const concursoResultArea = document.getElementById('concurso-result-area');
+const concursoResultDetail = document.getElementById('concurso-result-detail');
+const concursoReveal = document.getElementById('concurso-reveal');
+
+function refreshConcurso(){
+  const concursoAttempts = store.attempts.filter(a => a.source === 'concurso');
+  if(concursoAttempts.length === 0){
+    concursoList.innerHTML = '<div class="attempts-empty">Aún no hay intentos. Pruebe varios valores y compare.</div>';
+    concursoReveal.classList.remove('show');
+    return;
+  }
+  // Ordenar por área descendente
+  const sorted = [...concursoAttempts].sort((a,b)=>b.area-a.area);
+  const top = sorted.slice(0, 8);
+  let html = '';
+  top.forEach((a, i) => {
+    const rankClass = i === 0 ? 'gold' : (i === 1 ? 'silver' : (i === 2 ? 'bronze' : ''));
+    const isBest = i === 0;
+    html += `
+      <div class="attempt-row${isBest ? ' best' : ''}">
+        <div class="rank-badge ${rankClass}">${i+1}</div>
+        <div class="attempt-vals">x=${a.x.toFixed(3)} · y=${a.y.toFixed(3)}</div>
+        <div class="attempt-area">${a.area.toFixed(4)}</div>
+      </div>
+    `;
+  });
+  concursoList.innerHTML = html;
+
+  // Mostrar pista después de 3 intentos
+  if(concursoAttempts.length >= 3) concursoReveal.classList.add('show');
+}
+
+concursoAdd.addEventListener('click', () => {
+  const x = parseFloat(concursoX.value);
+  if(isNaN(x) || x <= 0 || x >= 2){
+    concursoResult.classList.add('show');
+    concursoResultArea.textContent = 'Valor inválido';
+    concursoResultDetail.textContent = 'El cateto x debe estar entre 0 y 2.';
+    return;
+  }
+  const y = yFromX(x);
+  const area = areaFromX(x);
+  recordAttempt(x, y, area, 'concurso');
+  refreshConcurso();
+  concursoResult.classList.add('show');
+  concursoResultArea.textContent = 'Área = ' + area.toFixed(4);
+  concursoResultDetail.textContent = `x=${x.toFixed(3)} · y=${y.toFixed(3)} · ${(area/OPT_AREA*100).toFixed(1)}% del óptimo`;
+  concursoX.value = '';
+  concursoX.focus();
+});
+
+concursoX.addEventListener('keypress', (e) => {
+  if(e.key === 'Enter') concursoAdd.click();
+});
+
+concursoClear.addEventListener('click', () => {
+  if(!confirm('¿Borrar todos los intentos del concurso?')) return;
+  store.attempts = store.attempts.filter(a => a.source !== 'concurso');
+  save();
+  refreshConcurso();
+  refreshRanking();
+  concursoResult.classList.remove('show');
+});
+
+// =================================================================
+// PANEL 3: ARRASTRE
+// =================================================================
+const canvasDrag = document.getElementById('canvas-drag');
+const ctxD = canvasDrag.getContext('2d');
+const dragXVal = document.getElementById('drag-x-val');
+const dragYVal = document.getElementById('drag-y-val');
+const dragAreaEl = document.getElementById('drag-area');
+const dragThermoFill = document.getElementById('drag-thermo-fill');
+const dragFeedback = document.getElementById('drag-feedback');
+const dragBest = document.getElementById('drag-best');
+
+let dragState = {
+  x: 0.8,
+  isDragging: false,
+};
+
+// Geometría del canvas de arrastre
+function dragGeom(){
+  const cssW = canvasDrag.clientWidth;
+  const cssH = Math.round(cssW * 500/600);
+  const dpr = window.devicePixelRatio || 1;
+  if(canvasDrag.width !== cssW * dpr){
+    canvasDrag.width = cssW * dpr;
+    canvasDrag.height = cssH * dpr;
+    canvasDrag.style.height = cssH + 'px';
+  }
+  return {cssW, cssH, dpr};
+}
+
+function drawDragCanvas(){
+  const {cssW, cssH, dpr} = dragGeom();
+  ctxD.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctxD.clearRect(0, 0, cssW, cssH);
+
+  const padL = 40, padR = 30, padT = 24, padB = 38;
+  const W = cssW - padL - padR;
+  const H = cssH - padT - padB;
+  const maxRange = 2.1;
+  const scale = Math.min(W/maxRange, H/maxRange);
+  const ox = padL;
+  const oy = cssH - padB;
+
+  // Ejes
+  ctxD.strokeStyle = '#C8C2B4';
+  ctxD.lineWidth = 1;
+  ctxD.beginPath();
+  ctxD.moveTo(ox, oy);
+  ctxD.lineTo(ox + maxRange*scale, oy);
+  ctxD.moveTo(ox, oy);
+  ctxD.lineTo(ox, oy - maxRange*scale);
+  ctxD.stroke();
+
+  // Marcas
+  ctxD.fillStyle = '#8A8A8A';
+  ctxD.font = '11px "JetBrains Mono", monospace';
+  for(let t = 0.5; t <= 2; t += 0.5){
+    ctxD.beginPath();
+    ctxD.moveTo(ox + t*scale, oy);
+    ctxD.lineTo(ox + t*scale, oy + 4);
+    ctxD.stroke();
+    ctxD.textAlign = 'center';
+    ctxD.fillText(t.toFixed(1), ox + t*scale, oy + 16);
+    ctxD.beginPath();
+    ctxD.moveTo(ox, oy - t*scale);
+    ctxD.lineTo(ox - 4, oy - t*scale);
+    ctxD.stroke();
+    ctxD.textAlign = 'right';
+    ctxD.fillText(t.toFixed(1), ox - 6, oy - t*scale + 4);
+  }
+
+  // Sombra del óptimo (referencia visual)
+  ctxD.fillStyle = 'rgba(184, 134, 11, 0.10)';
+  ctxD.beginPath();
+  ctxD.moveTo(ox, oy);
+  ctxD.lineTo(ox + OPT_X*scale, oy);
+  ctxD.lineTo(ox + OPT_X*scale, oy - OPT_X*scale);
+  ctxD.closePath();
+  ctxD.fill();
+  ctxD.strokeStyle = 'rgba(184, 134, 11, 0.45)';
+  ctxD.setLineDash([3, 4]);
+  ctxD.lineWidth = 1.2;
+  ctxD.beginPath();
+  ctxD.moveTo(ox, oy);
+  ctxD.lineTo(ox + OPT_X*scale, oy);
+  ctxD.lineTo(ox + OPT_X*scale, oy - OPT_X*scale);
+  ctxD.closePath();
+  ctxD.stroke();
+  ctxD.setLineDash([]);
+
+  // Triángulo actual
+  const x = dragState.x;
+  const y = yFromX(x);
+  const pb = ox + x*scale;
+  const py0 = oy;
+  const py = oy - y*scale;
+
+  ctxD.fillStyle = 'rgba(15, 78, 77, 0.16)';
+  ctxD.beginPath();
+  ctxD.moveTo(ox, oy);
+  ctxD.lineTo(pb, py0);
+  ctxD.lineTo(pb, py);
+  ctxD.closePath();
+  ctxD.fill();
+
+  ctxD.strokeStyle = '#0F4E4D';
+  ctxD.lineWidth = 2.4;
+  ctxD.beginPath();
+  ctxD.moveTo(ox, oy);
+  ctxD.lineTo(pb, py0);
+  ctxD.lineTo(pb, py);
+  ctxD.closePath();
+  ctxD.stroke();
+
+  // Ángulo recto
+  const sq = 10;
+  ctxD.strokeStyle = '#0F4E4D';
+  ctxD.lineWidth = 1.6;
+  ctxD.beginPath();
+  ctxD.moveTo(pb - sq, py0);
+  ctxD.lineTo(pb - sq, py0 - sq);
+  ctxD.lineTo(pb, py0 - sq);
+  ctxD.stroke();
+
+  // Punto arrastrable en (x, y)
+  const handleR = dragState.isDragging ? 14 : 12;
+  // Halo
+  ctxD.fillStyle = 'rgba(184, 51, 43, 0.18)';
+  ctxD.beginPath();
+  ctxD.arc(pb, py, handleR + 10, 0, Math.PI*2);
+  ctxD.fill();
+  // Núcleo
+  ctxD.fillStyle = '#B8332B';
+  ctxD.beginPath();
+  ctxD.arc(pb, py, handleR, 0, Math.PI*2);
+  ctxD.fill();
+  ctxD.strokeStyle = 'white';
+  ctxD.lineWidth = 2.5;
+  ctxD.stroke();
+
+  // Etiquetas
+  ctxD.fillStyle = '#1A1A1A';
+  ctxD.font = '12.5px "Inter Tight", sans-serif';
+  ctxD.textAlign = 'center';
+  ctxD.fillText('x = ' + x.toFixed(3), ox + (x*scale)/2, py0 - 8);
+  ctxD.save();
+  ctxD.translate(pb + 10, py0 - (y*scale)/2);
+  ctxD.textAlign = 'left';
+  ctxD.fillText('y = ' + y.toFixed(3), 0, 4);
+  ctxD.restore();
+
+  // Texto auxiliar
+  ctxD.fillStyle = 'rgba(184, 134, 11, 0.7)';
+  ctxD.font = 'italic 10px "Inter Tight", sans-serif';
+  ctxD.textAlign = 'center';
+  ctxD.fillText('referencia: óptimo', ox + (OPT_X*scale)/2, oy - OPT_X*scale - 6);
+
+  // Almacenamos geometría para conversión touch -> coord
+  drawDragCanvas._geom = {ox, oy, scale, padL, padR, padT, padB, cssW, cssH};
+}
+
+// Conversión de coords (clientX, clientY) a x del problema
+function clientToProblemX(clientX, clientY){
+  const rect = canvasDrag.getBoundingClientRect();
+  const cx = clientX - rect.left;
+  // cy = clientY - rect.top;   // no usado en este modelo (y depende de x)
+  const g = drawDragCanvas._geom;
+  if(!g) return null;
+  let x = (cx - g.ox) / g.scale;
+  // Clamp para evitar y negativo: x debe estar en (0.02, 1.98)
+  x = Math.max(0.05, Math.min(1.95, x));
+  return x;
+}
+
+function hitTestHandle(clientX, clientY){
+  const g = drawDragCanvas._geom;
+  if(!g) return false;
+  const rect = canvasDrag.getBoundingClientRect();
+  const cx = clientX - rect.left;
+  const cy = clientY - rect.top;
+  const x = dragState.x;
+  const y = yFromX(x);
+  const hx = g.ox + x*g.scale;
+  const hy = g.oy - y*g.scale;
+  const dist = Math.hypot(cx - hx, cy - hy);
+  return dist <= 30;  // área generosa de toque
+}
+
+function updateDrag(){
+  const x = dragState.x;
+  const y = yFromX(x);
+  const area = areaFromX(x);
+  dragXVal.textContent = x.toFixed(3);
+  dragYVal.textContent = y.toFixed(3);
+  dragAreaEl.textContent = area.toFixed(3);
+  const pct = Math.max(0, Math.min(100, (area/OPT_AREA)*100));
+  dragThermoFill.style.width = pct + '%';
+  const fb = feedbackFor(area);
+  dragFeedback.textContent = fb.txt;
+  dragFeedback.className = 'feedback ' + fb.cls;
+  dragBest.textContent = store.bestArea.toFixed(4);
+  drawDragCanvas();
+}
+
+// Handlers de entrada: usamos Touch y Mouse por separado para máxima
+// compatibilidad con WebViews embebidos (lectores de QR, apps in-app).
+// Evitamos Pointer Events + setPointerCapture porque fallan en varios WebViews.
+let inputActive = false;
+
+function handleStart(clientX, clientY, ev){
+  if(hitTestHandle(clientX, clientY)){
+    dragState.isDragging = true;
+    inputActive = true;
+    if(ev && ev.cancelable) ev.preventDefault();
+    updateDrag();
+  } else {
+    const newX = clientToProblemX(clientX, clientY);
+    if(newX !== null){
+      dragState.x = newX;
+      dragState.isDragging = true;
+      inputActive = true;
+      if(ev && ev.cancelable) ev.preventDefault();
+      updateDrag();
+    }
+  }
+}
+
+function handleMove(clientX, clientY, ev){
+  if(!inputActive) return;
+  if(ev && ev.cancelable) ev.preventDefault();
+  const newX = clientToProblemX(clientX, clientY);
+  if(newX !== null){
+    dragState.x = newX;
+    updateDrag();
+  }
+}
+
+function handleEnd(){
+  if(!inputActive) return;
+  inputActive = false;
+  dragState.isDragging = false;
+  const x = dragState.x;
+  const y = yFromX(x);
+  const area = areaFromX(x);
+  recordAttempt(x, y, area, 'arrastre');
+  updateDrag();
+}
+
+// --- Touch events ---
+canvasDrag.addEventListener('touchstart', (e) => {
+  const t = e.touches[0];
+  if(!t) return;
+  handleStart(t.clientX, t.clientY, e);
+}, {passive: false});
+
+canvasDrag.addEventListener('touchmove', (e) => {
+  const t = e.touches[0];
+  if(!t) return;
+  handleMove(t.clientX, t.clientY, e);
+}, {passive: false});
+
+canvasDrag.addEventListener('touchend', handleEnd);
+canvasDrag.addEventListener('touchcancel', handleEnd);
+
+// --- Mouse events (escritorio y emuladores) ---
+canvasDrag.addEventListener('mousedown', (e) => {
+  handleStart(e.clientX, e.clientY, e);
+});
+
+window.addEventListener('mousemove', (e) => {
+  if(!inputActive) return;
+  handleMove(e.clientX, e.clientY, e);
+});
+
+window.addEventListener('mouseup', handleEnd);
+
+// =================================================================
+// PANEL 4: RANKING UNIFICADO
+// =================================================================
+const rankingList = document.getElementById('ranking-list');
+const rankingClear = document.getElementById('ranking-clear');
+
+function refreshRanking(){
+  if(store.attempts.length === 0){
+    rankingList.innerHTML = '<div class="attempts-empty">Su ranking se llenará a medida que pruebe triángulos.</div>';
+    return;
+  }
+  const sorted = [...store.attempts].sort((a,b)=>b.area-a.area);
+  // Top 10 únicos (por x redondeado a 3 dec)
+  const seen = new Set();
+  const unique = [];
+  for(const a of sorted){
+    const k = Math.round(a.x*1000);
+    if(!seen.has(k)){
+      seen.add(k);
+      unique.push(a);
+    }
+    if(unique.length >= 10) break;
+  }
+  let html = '';
+  unique.forEach((a, i) => {
+    const rankClass = i === 0 ? 'gold' : (i === 1 ? 'silver' : (i === 2 ? 'bronze' : ''));
+    const isBest = i === 0;
+    const sourceLabel = {slider:'⇆', concurso:'◫', arrastre:'◉'}[a.source] || '·';
+    html += `
+      <div class="attempt-row${isBest ? ' best' : ''}">
+        <div class="rank-badge ${rankClass}">${i+1}</div>
+        <div class="attempt-vals">x=${a.x.toFixed(3)} · y=${a.y.toFixed(3)} <span style="color:var(--ink-faint)">${sourceLabel}</span></div>
+        <div class="attempt-area">${a.area.toFixed(4)}</div>
+      </div>
+    `;
+  });
+  rankingList.innerHTML = html;
+  refreshConcurso();
+}
+
+rankingClear.addEventListener('click', () => {
+  if(!confirm('¿Reiniciar el ranking completo? Se borrarán todos los intentos en este celular.')) return;
+  store.attempts = [];
+  store.bestArea = 0;
+  save();
+  refreshRanking();
+  refreshConcurso();
+  updateDrag();
+});
+
+// =================================================================
+// INICIALIZACIÓN
+// =================================================================
+window.addEventListener('resize', () => {
+  drawSliderCanvas();
+  drawDragCanvas();
+});
+
+// Aviso si el WebView bloquea localStorage (los intentos no se guardarán entre sesiones)
+if(!storageAvailable){
+  const main = document.getElementById('main');
+  const warn = document.createElement('div');
+  warn.style.cssText = 'margin:0 0 12px; padding:10px 12px; background:#FFF4E0; border-left:3px solid #B8860B; border-radius:6px; font-size:12px; color:#8B6914; line-height:1.45';
+  warn.innerHTML = 'Aviso: este navegador no permite guardar el ranking entre sesiones. Para la mejor experiencia, abra este enlace en <strong>Chrome</strong> o <strong>Safari</strong> usando la opción "Abrir en navegador" del lector de QR.';
+  main.insertBefore(warn, main.firstChild);
+}
+
+updateSlider();
+updateDrag();
+refreshConcurso();
+refreshRanking();
+
+})();
+</script>
+
+</body>
+</html>
